@@ -1,2 +1,2 @@
-# FallingMyoPatientMonitoringSystemAdminWebApp
+# FallingMyo Patient Monitoring System Administrator Interface
 This is the web application written using HTML5, Bootstrap, Javascript, AngularJS, and the Firebase API which serves as a central interface for hospital personnel monitoring patients through the FallingMyo Patient Monitoring System, a project I have created along with teammates, Aftab Narsimhan and Renee Slamka, at nwHacks 2015 hosted at the University of British Columbia.
