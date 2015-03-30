@@ -1,0 +1,194 @@
+<html ng-app="fallingMyoApp">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>Admin Interface</title>
+
+    <!-- AngularJS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+    <!-- Firebase -->
+    <script src="https://cdn.firebase.com/js/client/2.2.2/firebase.js"></script>
+    <!-- AngularFire -->
+    <script src="https://cdn.firebase.com/libs/angularfire/1.0.0/angularfire.min.js"></script>
+    <!-- Custom JS -->
+    <script type="text/javascript" src="js/app.js"></script>
+    <!--jQuery-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>  
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <div class="col-xs-12 well well-sm">
+        <h1 class="text-center">FallingMyo Patient Monitoring System</h1>
+        <h1 class="text-center"><small>Administrator Interface</small></h1>
+    </div>
+
+    <div ng-controller="authorizedController">
+        
+        <div class="col-xs-12 col-sm-6" ng-show="isThereAnEmergency()">
+            <h3 class="alert alert-danger">Emergency Patients</h3>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Room Number</th>
+                        <th></th>
+                    </tr>
+                <thead>
+                <tbody>
+                    <tr ng-repeat="patient in authorizedPatients | filter: {emergency : true}">
+                        <td>
+                            {{patient.name}} 
+                        </td>
+                        <td>
+                            {{patient.roomNumber}}
+                        </td>
+                        <td>
+                            <button class="btn btn-success" ng-click="emergencyHandled(patient)">Handled</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>        
+        </div>
+
+        <div class="col-xs-12 col-sm-6" ng-show="isThereAPendingRequest()">
+            <h3 class="alert alert-info">Pending Requests</h3>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Room Number</th>
+                        <th>Assitance Required</th>
+                        <th></th>
+                    </tr>
+                <thead>
+                <tbody>
+                    <tr ng-repeat="patient in authorizedPatients | filter: {assistanceRequired : '!NONE'}">
+                        <td>
+                            {{patient.name}} 
+                        </td>
+                        <td>
+                            {{patient.roomNumber}}
+                        </td>
+                        <td>
+                            {{patient.assistanceRequired}}
+                        </td>
+                        <td>
+                            <button class="btn btn-success" ng-click="assistanceHandled(patient)">Handled</button>    
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-xs-12" ng-show="authorizedPatients.length > 0">
+            <h3 class="alert alert-success">All Patients</h3> 
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Name
+                        </th>
+                        <th>Room Number
+                        </th>
+                        <th>Emergency
+                        </th>
+                        <th>Assistance Required
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="patient in authorizedPatients">
+                        <td>{{patient.name}}
+                        </td>
+                        <td>
+                            <div ng-show="editRoomIndices.indexOf(authorizedPatients.indexOf(patient)) == -1">
+                                {{patient.roomNumber}}
+                            </div>
+
+                            <input type="text"
+                                ng-show="editRoomIndices.indexOf(authorizedPatients.indexOf(patient)) > -1"
+                                ng-model="patient.roomNumber"/>
+
+                            <button class="btn btn-primary" 
+                                ng-click="editPatientRoomNumber(authorizedPatients.indexOf(patient))"
+                                ng-show="editRoomIndices.indexOf(authorizedPatients.indexOf(patient)) == -1">
+                                Edit</button>
+
+                            <button class="btn btn-success" 
+                                ng-click="submitNewRoomNumber(patient, authorizedPatients.indexOf(patient))"
+                                ng-show="editRoomIndices.indexOf(authorizedPatients.indexOf(patient)) > -1">
+                                Submit Changes</button>
+                        </td>
+                        <td>
+                            <div ng-show="patient.emergency == true">
+                                Emergency!
+                                <br>
+                                <button class="btn btn-success" ng-click="emergencyHandled(patient)">Handled</button>
+                            </div>
+                        </td>
+                        <td>
+                            <div ng-show="patient.assistanceRequired != 'NONE'">
+                                {{patient.assistanceRequired}}
+                                <br>
+                                <button class="btn btn-success" ng-click="assistanceHandled(patient)">Handled</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-xs-12" ng-controller="unauthorizedController" ng-show="unauthorizedPatients.length > 0">
+            <h3>Patients Pending Authorization</h3>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Account ID
+                        </th>
+                        <th>Name
+                        </th>
+                        <th>Email
+                        </th>
+                        <th>Room Number
+                        </th>
+                        <th>Authorize
+                        </th>
+                        <th>Delete Request
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="patient in unauthorizedPatients">
+                        <td>{{patient.accountID}}
+                        </td>
+                        <td>{{patient.name}}
+                        </td>
+                        <td>{{patient.email}}
+                        </td>
+                        <td>
+                            <input type="text" ng-model="patient.roomNumber" />
+                        </td>
+                        <td>
+                            <button class="btn btn-success" ng-click="authorizePatient(patient)">Authorize</button>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger" ng-click="deletePatient(patient)">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </body>
+</html>
